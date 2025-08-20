@@ -67,7 +67,7 @@ export default function Login() {
               />
               <button
                 type="button"
-                className="absolute right-2 top-[30px] btn btn-ghost btn-sm rounded-md"
+                className="absolute right-2 top-[30px] btn btn-ghost btn-sm z-100 rounded-md"
                 onClick={() => setShowPassword(!showPassword)}
                 tabIndex={-1}
                 aria-label={

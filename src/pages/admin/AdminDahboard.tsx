@@ -229,7 +229,7 @@ export default function AdminDashboard() {
 
             {/* Graphique élèves par établissement */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8">
-              <div className="card bg-primary text-primary-content shadow-xl lg:col-span-2">
+              <div className="card bg-base-100 text-primary-content shadow-xl lg:col-span-2">
                 <div className="card-body">
                   <h2 className="card-title">
                     Top 10 établissements par nombre d’élèves
@@ -248,7 +248,7 @@ export default function AdminDashboard() {
                 </div>
               </div>
 
-              <div className="card bg-secondary text-secondary-content shadow-xl">
+              <div className="card  text-secondary-content shadow-xl">
                 <div className="card-body">
                   <h2 className="card-title">Résumé rapide</h2>
                   <ul className="text-sm space-y-2">

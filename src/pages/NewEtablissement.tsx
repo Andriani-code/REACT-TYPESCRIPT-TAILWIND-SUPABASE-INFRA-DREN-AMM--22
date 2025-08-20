@@ -440,71 +440,89 @@ const NewEtablissement: React.FC = () => {
             </div>
           </div>
         </div>
-        <div className="flex flex-col gap-8 items-center justify-center">
-          {errorMsg && (
-            <div className="alert alert-error mt-4">
-              <span>{errorMsg}</span>
-            </div>
-          )}
-          {successMsg && (
-            <div className="alert w-200 alert-success mt-4">
-              <span>{successMsg}</span>
-            </div>
-          )}
-          <button
-            type="submit"
-            className={`btn btn-primary mt-4 h-15 w-50 ${
-              loading ? "loading" : ""
-            }`}
-            disabled={loading}
-          >
-            {loading
-              ? "Enregistrement..."
-              : isEditing
-              ? "Mettre à jour"
-              : "Créer l'établissement"}
-          </button>
-          {isEditing && (
-            <>
-              <button
-                className="btn btn-error mt-4"
-                onClick={() => setShowDeleteModal(true)}
-              >
-                Supprimer l'établissement
-              </button>
+        <div className="flex flex-col gap-6 items-center justify-center w-full max-w-md mx-auto">
+  {/* Alertes */}
+  {errorMsg && (
+    <div className="alert alert-error w-full shadow-lg">
+      <svg xmlns="http://www.w3.org/2000/svg" 
+           className="stroke-current shrink-0 h-6 w-6" fill="none" 
+           viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" 
+              d="M12 9v2m0 4h.01M12 5.5a6.5 6.5 0 100 13 
+              6.5 6.5 0 000-13z" />
+      </svg>
+      <span>{errorMsg}</span>
+    </div>
+  )}
+  {successMsg && (
+    <div className="alert alert-success w-full shadow-lg">
+      <svg xmlns="http://www.w3.org/2000/svg" 
+           className="stroke-current shrink-0 h-6 w-6" fill="none" 
+           viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" 
+              d="M5 13l4 4L19 7" />
+      </svg>
+      <span>{successMsg}</span>
+    </div>
+  )}
 
-              {/* Modal DaisyUI pour confirmation */}
-              <input
-                type="checkbox"
-                id="delete-modal"
-                className="modal-toggle"
-                checked={showDeleteModal}
-                readOnly
-              />
-              <div className="modal">
-                <div className="modal-box">
-                  <h3 className="font-bold text-lg">
-                    Confirmer la suppression ?
-                  </h3>
-                  <p className="py-4">
-                    Cette action est irréversible. Voulez-vous continuer ?
-                  </p>
-                  <div className="modal-action">
-                    <button className="btn btn-error" onClick={handleDelete}>
-                      Supprimer
-                    </button>
-                    <button
-                      className="btn"
-                      onClick={() => setShowDeleteModal(false)}
-                    >
-                      Annuler
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </>
-          )}
+  {/* Bouton principal */}
+  <button
+    type="submit"
+    className={`btn btn-primary w-full h-12 ${loading ? "loading" : ""}`}
+    disabled={loading}
+  >
+    {loading
+      ? "Enregistrement..."
+      : isEditing
+      ? "Mettre à jour"
+      : "Créer l'établissement"}
+  </button>
+
+  {/* Suppression si édition */}
+  {isEditing && (
+    <>
+      <button
+        className="btn btn-outline btn-error w-full h-12"
+        onClick={() => setShowDeleteModal(true)}
+      >
+        Supprimer l'établissement
+      </button>
+
+      {/* Modal DaisyUI */}
+      <input
+        type="checkbox"
+        id="delete-modal"
+        className="modal-toggle"
+        checked={showDeleteModal}
+        readOnly
+      />
+      <div className="modal">
+        <div className="modal-box">
+          <h3 className="font-bold text-lg text-error">
+            Confirmer la suppression ?
+          </h3>
+          <p className="py-4 text-sm">
+            ⚠️ Cette action est <span className="font-bold">irréversible</span>. 
+            Voulez-vous vraiment continuer ?
+          </p>
+          <div className="modal-action">
+            <button className="btn btn-error" onClick={handleDelete}>
+              Oui, supprimer
+            </button>
+            <button
+              className="btn btn-ghost"
+              onClick={() => setShowDeleteModal(false)}
+            >
+              Annuler
+            </button>
+          </div>
         </div>
+      </div>
+    </>
+  )}
+</div>
+
       </form>
       <div className="flex flex-col gap-5"></div>
       {!showBatimentForm && (
