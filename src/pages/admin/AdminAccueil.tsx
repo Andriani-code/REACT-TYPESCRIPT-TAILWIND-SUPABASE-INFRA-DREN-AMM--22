@@ -98,8 +98,6 @@ const AdminAccueil = () => {
     setSelectedZAP("");
   };
 
-  // On retire les blocs de rendu conditionnel pour 'loading' et 'error' de haut niveau
-  // et on les gère directement dans le JSX principal.
   return (
     <div>
       <div>
