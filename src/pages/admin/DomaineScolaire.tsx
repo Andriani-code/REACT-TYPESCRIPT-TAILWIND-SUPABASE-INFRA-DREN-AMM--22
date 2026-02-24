@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { type Designation, type Etablissement } from "../../types/types";
 import supabase from "../../helper/SupabaseClient";
 
@@ -18,27 +18,13 @@ interface SectionProps {
 }
 
 const DesignationSection = ({ title, form, setForm }: SectionProps) => {
-  const [titre, setTitre] = useState(form.esttitre ?? false);
+  const titre = form.esttitre ?? false;
 
-  // Met à jour esttitre dans le form
-  useEffect(() => {
-    setForm({ ...form, esttitre: titre });
-  }, [titre]);
-
-  const handleCheckboxChange = (key: keyof Designation, value: boolean) => {
+  const setField = <K extends keyof Designation>(key: K, value: Designation[K]) => {
     setForm({ ...form, [key]: value });
   };
 
-  const handleNumberChange = (key: keyof Designation, value: number) => {
-    setForm({ ...form, [key]: value });
-  };
-
-  const handleSelectChange = (key: keyof Designation, value: string) => {
-    setForm({ ...form, [key]: value });
-  };
-
-  // Pour terrains domanial/communal/autres
-  const handleTerrainChange = (val: "domanial" | "communal" | "autres") => {
+  const setTerrainOwner = (val: "domanial" | "communal" | "autres") => {
     setForm({
       ...form,
       estdomanial: val === "domanial",
@@ -47,35 +33,39 @@ const DesignationSection = ({ title, form, setForm }: SectionProps) => {
     });
   };
 
+  const setTitreOwner = (val: "men" | "prive" | "autres") => {
+    setForm({
+      ...form,
+      estmen: val === "men",
+      estprive: val === "prive",
+      autres: val === "autres",
+    });
+  };
+
   return (
     <div className="w-[40%] ml-5 p-8 bg-base-100 rounded-lg shadow-lg mt-20">
-      <h2 className="text-xl font-bold mb-6 text-center">
-        DESIGNATION : {title}
-      </h2>
+      <h2 className="text-xl font-bold mb-6 text-center">DESIGNATION : {title}</h2>
+
       <form className="flex flex-col gap-5">
-        {/* Dans l'enceinte */}
         <label className="form-control">
           <div className="md:flex md:items-center md:justify-between">
             <span className="label-text font-semibold">
-              DANS L'ENCEINTE DE L'ETABLISSEMENT
+              DANS L&apos;ENCEINTE DE L&apos;ETABLISSEMENT
             </span>
             <input
               type="checkbox"
               checked={form.estenceinte_etab ?? false}
-              onChange={(e) =>
-                handleCheckboxChange("estenceinte_etab", e.target.checked)
-              }
+              onChange={(e) => setField("estenceinte_etab", e.target.checked)}
             />
           </div>
         </label>
 
-        {/* Titre ou non */}
         <div className="flex justify-between">
           <p>{titre ? "TERRAIN TITRE" : "TERRAIN NON TITRE"}</p>
           <input
             type="checkbox"
             checked={titre}
-            onChange={() => setTitre(!titre)}
+            onChange={() => setField("esttitre", !titre)}
           />
         </div>
 
@@ -85,30 +75,24 @@ const DesignationSection = ({ title, form, setForm }: SectionProps) => {
               label="MEN"
               name={`titre-${title}`}
               checked={form.estmen ?? false}
-              onChange={() =>
-                setForm({ ...form, estmen: true, estprive: false, autres: false })
-              }
+              onChange={() => setTitreOwner("men")}
             />
             <RadioOption
               label="TIERCE PERSONNE OU ORGANISME PRIVE"
               name={`titre-${title}`}
               checked={form.estprive ?? false}
-              onChange={() =>
-                setForm({ ...form, estmen: false, estprive: true, autres: false })
-              }
+              onChange={() => setTitreOwner("prive")}
             />
             <RadioOption
               label="Autres"
               name={`titre-${title}`}
               checked={form.autres ?? false}
-              onChange={() =>
-                setForm({ ...form, estmen: false, estprive: false, autres: true })
-              }
+              onChange={() => setTitreOwner("autres")}
             />
             <NumberInput
               label="Numero cadastre"
               value={form.numcadastre ?? 0}
-              onChange={(val) => handleNumberChange("numcadastre", val)}
+              onChange={(val) => setField("numcadastre", val)}
             />
           </div>
         ) : (
@@ -117,19 +101,19 @@ const DesignationSection = ({ title, form, setForm }: SectionProps) => {
               label="TERRAIN DOMANIAL"
               name={`terrain-${title}`}
               checked={form.estdomanial ?? false}
-              onChange={() => handleTerrainChange("domanial")}
+              onChange={() => setTerrainOwner("domanial")}
             />
             <RadioOption
               label="TERRAIN COMMUNAL"
               name={`terrain-${title}`}
               checked={form.estcommunal ?? false}
-              onChange={() => handleTerrainChange("communal")}
+              onChange={() => setTerrainOwner("communal")}
             />
             <RadioOption
               label="Autres"
               name={`terrain-${title}`}
               checked={form.autres ?? false}
-              onChange={() => handleTerrainChange("autres")}
+              onChange={() => setTerrainOwner("autres")}
             />
           </div>
         )}
@@ -137,21 +121,20 @@ const DesignationSection = ({ title, form, setForm }: SectionProps) => {
         <NumberInput
           label="Superficie"
           value={form.superficiedesign ?? 0}
-          onChange={(val) => handleNumberChange("superficiedesign", val)}
+          onChange={(val) => setField("superficiedesign", val)}
         />
 
         <SelectInput
           label="Litigieux"
           value={form.litigieux ?? "Non"}
           options={["Une partie", "En totalité", "Non"]}
-          onChange={(val) => handleSelectChange("litigieux", val)}
+          onChange={(val) => setField("litigieux", val)}
         />
       </form>
     </div>
   );
 };
 
-// Composants utilitaires
 const RadioOption = ({
   label,
   name,
@@ -206,13 +189,9 @@ const SelectInput = ({
   <label className="form-control">
     <div className="md:flex md:items-center md:justify-between">
       <span className="label-text font-semibold">{label}</span>
-      <select
-        className="select"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-      >
-        {options.map((opt, i) => (
-          <option key={i} value={opt} className="text-sm">
+      <select className="select" value={value} onChange={(e) => onChange(e.target.value)}>
+        {options.map((opt) => (
+          <option key={opt} value={opt} className="text-sm">
             {opt}
           </option>
         ))}
@@ -223,38 +202,9 @@ const SelectInput = ({
 
 export default function DomaineScolaire({ codeetab }: Etablissement) {
   const [sectionsData, setSectionsData] = useState<Designation[]>([]);
-
-  // Charger les désignations depuis Supabase
-  const fetchDesignations = async () => {
-    const { data, error } = await supabase
-      .from("designation")
-      .select("*")
-      .eq("codeetab", codeetab);
-
-    if (error) console.error(error);
-    else setSectionsData(data as Designation[]);
-  };
-
-  useEffect(() => {
-    fetchDesignations();
-  }, [codeetab]);
-
-  const handleSave = async () => {
-    for (const form of sectionsData) {
-      if (form.numdesign) {
-        const { error } = await supabase
-          .from("designation")
-          .update(form)
-          .eq("numdesign", form.numdesign);
-        if (error) console.error(error);
-      } else {
-        const { error } = await supabase.from("designation").insert([form]);
-        if (error) console.error(error);
-      }
-    }
-    fetchDesignations();
-    alert("Enregistrement effectué !");
-  };
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
 
   const sections: DesignationType[] = [
     "TERRAIN BATI",
@@ -266,35 +216,115 @@ export default function DomaineScolaire({ codeetab }: Etablissement) {
     "AUTRES",
   ];
 
+  const fetchDesignations = async () => {
+    setLoading(true);
+    setMessage(null);
+
+    const { data, error } = await supabase
+      .from("designation")
+      .select("*")
+      .eq("codeetab", codeetab);
+
+    if (error) {
+      console.error(error);
+      setSectionsData([]);
+      setMessage("Impossible de charger les données.");
+    } else {
+      setSectionsData((data ?? []) as Designation[]);
+    }
+
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchDesignations();
+  }, [codeetab]);
+
+  const designationByName = useMemo(() => {
+    const map = new Map<string, Designation>();
+    for (const d of sectionsData) map.set(d.nomdesign, d);
+    return map;
+  }, [sectionsData]);
+
+  const upsertLocalDesignation = (nomdesign: string, updated: Designation) => {
+    setSectionsData((prev) => {
+      const next = [...prev];
+      const index = next.findIndex((d) => d.nomdesign === nomdesign);
+      if (index >= 0) next[index] = updated;
+      else next.push(updated);
+      return next;
+    });
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
+    setMessage(null);
+
+    try {
+      const tasks = sectionsData.map((d) => {
+        if (d.numdesign) {
+          return supabase.from("designation").update(d).eq("numdesign", d.numdesign);
+        }
+        return supabase.from("designation").insert([d]);
+      });
+
+      const results = await Promise.all(tasks);
+      const firstError = results.find((r) => r.error)?.error;
+
+      if (firstError) {
+        console.error(firstError);
+        setMessage("Enregistrement partiel ou échoué. Vérifiez les données.");
+        return;
+      }
+
+      await fetchDesignations();
+      setMessage("Enregistrement effectué.");
+    } catch (err) {
+      console.error(err);
+      setMessage("Erreur réseau. Réessayez.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return (
     <div className="bg-base-200 rounded-3xl px-[3%] py-[3%]">
       <h2 className="text-center text-2xl text-primary-content font-semibold mt-10">
         DOMAINE SCOLAIRE
       </h2>
-      <div className="flex justify-between flex-wrap gap-20 px-[3%]">
-        {sections.map((title, idx) => (
-          <DesignationSection
-            key={title}
-            title={title}
-            form={
-              sectionsData[idx] ??
-              ({
-                nomdesign: title,
-                codeetab,
-              } as Designation)
-            }
-            setForm={(form) => {
-              const newData = [...sectionsData];
-              newData[idx] = form;
-              setSectionsData(newData);
-            }}
-          />
-        ))}
-      </div>
+
+      {loading ? (
+        <div className="flex justify-center mt-10">
+          <span className="loading loading-spinner loading-lg"></span>
+        </div>
+      ) : (
+        <div className="flex justify-between flex-wrap gap-20 px-[3%]">
+          {sections.map((title) => (
+            <DesignationSection
+              key={title}
+              title={title}
+              form={
+                designationByName.get(title) ??
+                ({
+                  nomdesign: title,
+                  codeetab,
+                } as Designation)
+              }
+              setForm={(updated) => upsertLocalDesignation(title, updated)}
+            />
+          ))}
+        </div>
+      )}
+
+      {message && (
+        <p className="text-center mt-8 text-sm font-medium">
+          {message}
+        </p>
+      )}
 
       <div className="flex justify-center mt-10">
-        <button className="btn btn-primary" onClick={handleSave}>
-          Enregistrer les modifications
+        <button className="btn btn-primary" onClick={handleSave} disabled={saving || loading}>
+          {saving ? "Enregistrement..." : "Enregistrer les modifications"}
         </button>
       </div>
     </div>
